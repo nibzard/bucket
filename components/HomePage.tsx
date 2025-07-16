@@ -4,11 +4,15 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { UploadDropzone } from "@/lib/uploadthing";
+import { uploadFiles } from "@/lib/uploadthing-utils";
 import { UploadPageCopyButton } from "@/components/UploadPageCopyButton";
 import { CopyLinkButton } from "@/components/CopyLinkButton";
 import { Pagination } from "@/components/Pagination";
+import { Toast } from "@/components/Toast";
+import { FullPageDropzone } from "@/components/FullPageDropzone";
+import { SwipeableFileCard } from "@/components/SwipeableFileCard";
 
-interface File {
+interface FileRecord {
   id: string;
   filename: string;
   originalName: string;
@@ -21,7 +25,7 @@ interface File {
 }
 
 interface HomePageProps {
-  initialFiles: File[];
+  initialFiles: FileRecord[];
   totalCount: number;
   currentPage: number;
 }
@@ -45,7 +49,7 @@ function getFileIcon(mimeType: string) {
 
 export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProps) {
   const { data: session } = useSession();
-  const [files, setFiles] = useState<File[]>(initialFiles);
+  const [files, setFiles] = useState<FileRecord[]>(initialFiles);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{
     name: string;
     slug: string;
@@ -55,6 +59,8 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   const [uploadMessage, setUploadMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
   
   const itemsPerPage = 20;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
@@ -62,7 +68,8 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   const handlePageChange = (page: number) => {
     const url = new URL(window.location.href);
     url.searchParams.set('page', page.toString());
-    window.location.href = url.toString();
+    window.history.pushState({}, '', url.toString());
+    window.location.reload();
   };
 
   const handleFileSelect = (fileId: string) => {
@@ -84,22 +91,30 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   const handleDeleteFile = async (fileId: string) => {
     if (!confirm("Are you sure you want to delete this file?")) return;
     
-    setIsDeleting(true);
+    // Optimistic update - remove file immediately
+    const originalFiles = files;
+    setFiles(prev => prev.filter(file => file.id !== fileId));
+    setSelectedFiles(prev => prev.filter(id => id !== fileId));
+    
     try {
       const response = await fetch(`/api/files/${fileId}`, {
         method: "DELETE",
       });
       
-      if (response.ok) {
-        setFiles(prev => prev.filter(file => file.id !== fileId));
-        setSelectedFiles(prev => prev.filter(id => id !== fileId));
+      if (!response.ok) {
+        // Revert on failure
+        setFiles(originalFiles);
+        setToastMessage("Failed to delete file");
+        setShowToast(true);
       } else {
-        alert("Failed to delete file");
+        setToastMessage("File deleted successfully");
+        setShowToast(true);
       }
     } catch (error) {
-      alert("Error deleting file");
-    } finally {
-      setIsDeleting(false);
+      // Revert on error
+      setFiles(originalFiles);
+      setToastMessage("Error deleting file");
+      setShowToast(true);
     }
   };
 
@@ -108,24 +123,38 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
     
     if (!confirm(`Are you sure you want to delete ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}?`)) return;
     
+    // Optimistic update - remove files immediately
+    const originalFiles = files;
+    const originalSelected = selectedFiles;
+    setFiles(prev => prev.filter(file => !selectedFiles.includes(file.id)));
+    setSelectedFiles([]);
     setIsDeleting(true);
+    
     try {
       const response = await fetch("/api/files/bulk-delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ fileIds: selectedFiles }),
+        body: JSON.stringify({ fileIds: originalSelected }),
       });
       
-      if (response.ok) {
-        setFiles(prev => prev.filter(file => !selectedFiles.includes(file.id)));
-        setSelectedFiles([]);
+      if (!response.ok) {
+        // Revert on failure
+        setFiles(originalFiles);
+        setSelectedFiles(originalSelected);
+        setToastMessage("Failed to delete files");
+        setShowToast(true);
       } else {
-        alert("Failed to delete files");
+        setToastMessage(`${originalSelected.length} file${originalSelected.length > 1 ? 's' : ''} deleted successfully`);
+        setShowToast(true);
       }
     } catch (error) {
-      alert("Error deleting files");
+      // Revert on error
+      setFiles(originalFiles);
+      setSelectedFiles(originalSelected);
+      setToastMessage("Error deleting files");
+      setShowToast(true);
     } finally {
       setIsDeleting(false);
     }
@@ -134,26 +163,97 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   const handleDeleteAll = async () => {
     if (!confirm(`Are you sure you want to delete ALL ${totalCount} files? This action cannot be undone.`)) return;
     
+    // Optimistic update - clear all files immediately
+    const originalFiles = files;
+    const originalSelected = selectedFiles;
+    setFiles([]);
+    setSelectedFiles([]);
     setIsDeleting(true);
+    
     try {
       const response = await fetch("/api/files/delete-all", {
         method: "POST",
       });
       
-      if (response.ok) {
-        // Refresh the page to show empty state
-        window.location.reload();
+      if (!response.ok) {
+        // Revert on failure
+        setFiles(originalFiles);
+        setSelectedFiles(originalSelected);
+        setToastMessage("Failed to delete all files");
+        setShowToast(true);
       } else {
-        alert("Failed to delete all files");
+        setToastMessage(`All ${totalCount} files deleted successfully`);
+        setShowToast(true);
       }
     } catch (error) {
-      alert("Error deleting all files");
+      // Revert on error
+      setFiles(originalFiles);
+      setSelectedFiles(originalSelected);
+      setToastMessage("Error deleting all files");
+      setShowToast(true);
     } finally {
       setIsDeleting(false);
     }
   };
 
-  return (
+  const handleCustomUpload = async (acceptedFiles: File[]) => {
+    if (!session) return;
+    
+    setIsUploading(true);
+    setUploadMessage("");
+    
+    try {
+      const res = await uploadFiles("fileUploader", {
+        files: acceptedFiles,
+      });
+      
+      if (res) {
+        const newFiles = res.map((file) => ({
+          name: file.name,
+          slug: file.serverData.slug,
+          url: file.url,
+        }));
+        setUploadedFiles((prev) => [...prev, ...newFiles]);
+        
+        // Auto-copy link for single file uploads
+        if (res.length === 1) {
+          navigator.clipboard.writeText(`${window.location.origin}/i/${res[0].serverData.slug}`);
+          setToastMessage("Link copied to clipboard!");
+          setShowToast(true);
+        } else {
+          setUploadMessage(`Uploaded ${res.length} files successfully!`);
+        }
+        
+        // Add new files to the current list with animation
+        const newFileObjects = res.map((file) => ({
+          id: file.serverData.slug, // temporary ID using slug
+          filename: file.name,
+          originalName: file.name,
+          fileKey: file.key || "",
+          fileUrl: file.url,
+          fileSize: file.size || 0,
+          mimeType: file.type || "",
+          slug: file.serverData.slug,
+          uploadedAt: new Date(),
+        }));
+        
+        setFiles((prev) => [...newFileObjects, ...prev]);
+        
+        // Clear upload state after short delay
+        setTimeout(() => {
+          setUploadedFiles([]);
+          setUploadMessage("");
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      setUploadMessage("Upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const content = (
     <main className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
@@ -165,63 +265,14 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
 
         {session && (
           <div className="mb-8">
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-              <h2 className="text-lg font-semibold mb-4 text-blue-800">
-                Upload New Files
-              </h2>
-              
-              {uploadMessage && (
-                <div className="mb-4 p-3 bg-green-100 border border-green-200 rounded text-green-700">
-                  {uploadMessage}
-                </div>
-              )}
-              
-              {isUploading && (
-                <div className="mb-4 flex items-center space-x-3">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                  <span className="text-blue-600">Uploading...</span>
-                </div>
-              )}
-              
-              <UploadDropzone
-                endpoint="fileUploader"
-                onUploadBegin={() => {
-                  setIsUploading(true);
-                  setUploadMessage("");
-                }}
-                onClientUploadComplete={(res) => {
-                  setIsUploading(false);
-                  if (res) {
-                    const newFiles = res.map((file) => ({
-                      name: file.name,
-                      slug: file.serverData.slug,
-                      url: file.url,
-                    }));
-                    setUploadedFiles((prev) => [...prev, ...newFiles]);
-                    setUploadMessage(`Uploaded ${res.length} file${res.length > 1 ? 's' : ''} successfully!`);
-                    // Refresh page to show new files after a short delay
-                    setTimeout(() => window.location.reload(), 1500);
-                  }
-                }}
-                onUploadError={(error: Error) => {
-                  setIsUploading(false);
-                  setUploadMessage(`Upload error: ${error.message}`);
-                }}
-                config={{
-                  mode: "auto",
-                }}
-                appearance={{
-                  container: "border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors",
-                  uploadIcon: "hidden",
-                  label: "text-gray-600 text-sm",
-                  allowedContent: "hidden",
-                  button: "hidden"
-                }}
-              />
-            </div>
+            {uploadMessage && (
+              <div className="mb-4 p-3 bg-green-100 border border-green-200 rounded text-green-700">
+                {uploadMessage}
+              </div>
+            )}
 
             {uploadedFiles.length > 0 && (
-              <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-6">
+              <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-4 text-green-800">
                   Recently Uploaded
                 </h3>
@@ -246,6 +297,13 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
                 </div>
               </div>
             )}
+
+            <div className="text-center py-8 text-gray-500">
+              <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p className="text-lg">Drop files anywhere to upload</p>
+            </div>
           </div>
         )}
 
@@ -299,56 +357,17 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
             
             <div className="grid gap-4">
               {files.map((file) => (
-                <div
-                  key={file.id}
-                  className={`bg-white border rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow ${
-                    selectedFiles.includes(file.id) ? 'border-blue-500 bg-blue-50' : ''
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      {session && (
-                        <input
-                          type="checkbox"
-                          checked={selectedFiles.includes(file.id)}
-                          onChange={() => handleFileSelect(file.id)}
-                          className="rounded border-gray-300"
-                        />
-                      )}
-                      <span className="text-xl">
-                        {getFileIcon(file.mimeType)}
-                      </span>
-                      <div>
-                        <Link 
-                          href={`/f/${file.slug}`}
-                          className="font-medium text-gray-900 hover:text-blue-600 hover:underline"
-                        >
-                          {file.originalName}
-                        </Link>
-                        <div className="text-xs text-gray-500 space-x-3">
-                          <span>{formatFileSize(file.fileSize)}</span>
-                          <span>
-                            {new Date(file.uploadedAt).toLocaleDateString()} at {new Date(file.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <CopyLinkButton 
-                        slug={file.slug}
-                        className="px-2 py-1 bg-gray-500 text-white rounded text-xs hover:bg-gray-600"
-                      />
-                      {session && (
-                        <button
-                          onClick={() => handleDeleteFile(file.id)}
-                          disabled={isDeleting}
-                          className="px-2 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600 disabled:opacity-50"
-                        >
-                          {isDeleting ? "..." : "Delete"}
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                <div key={file.id} className="animate-fade-in">
+                  <SwipeableFileCard
+                    file={file}
+                    isSelected={selectedFiles.includes(file.id)}
+                    onSelect={() => handleFileSelect(file.id)}
+                    onDelete={() => handleDeleteFile(file.id)}
+                    isDeleting={isDeleting}
+                    showCheckbox={!!session}
+                    formatFileSize={formatFileSize}
+                    getFileIcon={getFileIcon}
+                  />
                 </div>
               ))}
             </div>
@@ -361,6 +380,21 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
           </>
         )}
       </div>
+      
+      <Toast 
+        message={toastMessage}
+        show={showToast}
+        onHide={() => setShowToast(false)}
+      />
     </main>
   );
+
+  return session ? (
+    <FullPageDropzone 
+      onDrop={handleCustomUpload}
+      isUploading={isUploading}
+    >
+      {content}
+    </FullPageDropzone>
+  ) : content;
 }
