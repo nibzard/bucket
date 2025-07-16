@@ -1,33 +1,35 @@
-import Link from "next/link";
+import { db, files } from "@/lib/db";
+import { desc, count } from "drizzle-orm";
+import { HomePage } from "@/components/HomePage";
 
-export default function HomePage() {
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-4xl mx-auto text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-6">
-            Simple File Upload & Sharing
-          </h1>
-          <p className="text-xl text-gray-600 mb-8">
-            Upload files and share them with short, easy-to-remember URLs
-          </p>
-          
-          <div className="flex justify-center space-x-4">
-            <Link
-              href="/files"
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              Browse Files
-            </Link>
-            <Link
-              href="/login"
-              className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-            >
-              Upload Files
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+async function getFiles(page: number = 1, limit: number = 20) {
+  const offset = (page - 1) * limit;
+  
+  const [filesList, totalCountResult] = await Promise.all([
+    db
+      .select()
+      .from(files)
+      .orderBy(desc(files.uploadedAt))
+      .limit(limit)
+      .offset(offset),
+    db
+      .select({ count: count() })
+      .from(files)
+  ]);
+
+  return {
+    files: filesList,
+    totalCount: totalCountResult[0].count
+  };
+}
+
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: { page?: string };
+}) {
+  const currentPage = parseInt(searchParams.page || '1');
+  const { files: allFiles, totalCount } = await getFiles(currentPage);
+
+  return <HomePage initialFiles={allFiles} totalCount={totalCount} currentPage={currentPage} />;
 }

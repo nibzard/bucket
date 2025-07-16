@@ -7,8 +7,7 @@ interface CopyLinkButtonProps {
 
 export function CopyLinkButton({ slug, className }: CopyLinkButtonProps) {
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/f/${slug}`);
-    alert("Link copied to clipboard!");
+    navigator.clipboard.writeText(`${window.location.origin}/i/${slug}`);
   };
 
   return (

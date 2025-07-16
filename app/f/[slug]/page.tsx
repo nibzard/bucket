@@ -48,11 +48,11 @@ export default async function FileViewPage({
   const isPdf = file.mimeType.includes("pdf");
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <main className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
         <div className="mb-8">
           <Link
-            href="/files"
+            href="/"
             className="text-blue-500 hover:text-blue-600 text-sm"
           >
             ← Back to all files
@@ -62,29 +62,23 @@ export default async function FileViewPage({
         <div className="bg-white border rounded-lg p-6 shadow-sm">
           <div className="flex items-center space-x-3 mb-6">
             <span className="text-3xl">{getFileIcon(file.mimeType)}</span>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                {file.originalName}
-              </h1>
+            <div className="flex-1">
+              <div className="flex items-center space-x-2">
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {file.originalName}
+                </h1>
+                <CopyCurrentUrlButton className="text-gray-400 hover:text-gray-600 cursor-pointer">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                  </svg>
+                </CopyCurrentUrlButton>
+              </div>
               <div className="text-sm text-gray-500 space-x-4">
                 <span>{formatFileSize(file.fileSize)}</span>
                 <span>
-                  Uploaded {new Date(file.uploadedAt).toLocaleDateString()}
+                  Uploaded {new Date(file.uploadedAt).toLocaleDateString()} at {new Date(file.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <div className="flex space-x-2">
-              <a
-                href={file.fileUrl}
-                download={file.originalName}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Download
-              </a>
-              <CopyCurrentUrlButton className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600" />
             </div>
           </div>
 
@@ -140,6 +134,6 @@ export default async function FileViewPage({
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

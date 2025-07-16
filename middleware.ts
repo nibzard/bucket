@@ -17,5 +17,5 @@ export default withAuth(
 );
 
 export const config = {
-  matcher: ["/upload/:path*", "/api/uploadthing/:path*"],
+  matcher: ["/api/uploadthing/:path*"],
 };

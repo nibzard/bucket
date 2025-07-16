@@ -7,8 +7,7 @@ interface UploadPageCopyButtonProps {
 
 export function UploadPageCopyButton({ slug, className }: UploadPageCopyButtonProps) {
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/f/${slug}`);
-    alert("Link copied to clipboard!");
+    navigator.clipboard.writeText(`${window.location.origin}/i/${slug}`);
   };
 
   return (

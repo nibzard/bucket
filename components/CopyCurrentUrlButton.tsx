@@ -2,17 +2,22 @@
 
 interface CopyCurrentUrlButtonProps {
   className?: string;
+  children?: React.ReactNode;
 }
 
-export function CopyCurrentUrlButton({ className }: CopyCurrentUrlButtonProps) {
+export function CopyCurrentUrlButton({ className, children }: CopyCurrentUrlButtonProps) {
   const handleCopy = () => {
-    navigator.clipboard.writeText(window.location.href);
-    alert("Link copied to clipboard!");
+    // Get current slug from URL
+    const currentPath = window.location.pathname;
+    const slug = currentPath.split('/').pop();
+    if (slug) {
+      navigator.clipboard.writeText(`${window.location.origin}/i/${slug}`);
+    }
   };
 
   return (
     <button onClick={handleCopy} className={className}>
-      Copy Link
+      {children || "Copy Link"}
     </button>
   );
 }
