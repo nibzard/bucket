@@ -39,12 +39,12 @@ function formatFileSize(bytes: number) {
 }
 
 function getFileIcon(mimeType: string) {
-  if (mimeType.startsWith("image/")) return "🖼️";
-  if (mimeType.startsWith("video/")) return "🎥";
-  if (mimeType.startsWith("audio/")) return "🎵";
-  if (mimeType.includes("pdf")) return "📄";
-  if (mimeType.startsWith("text/")) return "📝";
-  return "📎";
+  if (mimeType.startsWith("image/")) return "IMG";
+  if (mimeType.startsWith("video/")) return "VID";
+  if (mimeType.startsWith("audio/")) return "AUD";
+  if (mimeType.includes("pdf")) return "PDF";
+  if (mimeType.startsWith("text/")) return "TXT";
+  return "FILE";
 }
 
 export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProps) {
@@ -254,138 +254,177 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   };
 
   const content = (
-    <main className="container mx-auto px-4 py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Files</h1>
-          <p className="text-gray-600">
-            {totalCount} files total
-          </p>
-        </div>
+    <main className="min-h-screen">
+      <div className="mobile-safe-padding">
+        <div className="max-w-4xl mx-auto px-4 py-4 md:py-8">
+          {/* Header */}
+          <div className="mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900">Files</h1>
+            <p className="text-sm md:text-base text-gray-600">
+              {totalCount} {totalCount === 1 ? 'file' : 'files'} total
+            </p>
+          </div>
 
-        {session && (
-          <div className="mb-8">
-            {uploadMessage && (
-              <div className="mb-4 p-3 bg-green-100 border border-green-200 rounded text-green-700">
-                {uploadMessage}
-              </div>
-            )}
+          {/* Upload Section */}
+          {session && (
+            <div className="mb-6 md:mb-8">
+              {uploadMessage && (
+                <div className="mb-4 p-3 bg-green-100 border border-green-200 rounded-lg text-green-700 text-sm md:text-base">
+                  {uploadMessage}
+                </div>
+              )}
 
-            {uploadedFiles.length > 0 && (
-              <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 text-green-800">
-                  Recently Uploaded
-                </h3>
-                <div className="space-y-3">
-                  {uploadedFiles.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between bg-white p-3 rounded border"
-                    >
-                      <div>
-                        <div className="font-medium text-gray-900">{file.name}</div>
-                        <div className="text-sm text-gray-500">
-                          Share: {window.location.origin}/i/{file.slug}
+              {uploadedFiles.length > 0 && (
+                <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 md:p-6">
+                  <h3 className="text-base md:text-lg font-semibold mb-3 md:mb-4 text-green-800">
+                    Recently Uploaded
+                  </h3>
+                  <div className="space-y-3">
+                    {uploadedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex flex-col sm:flex-row sm:items-center sm:justify-between bg-white p-3 rounded-lg border space-y-2 sm:space-y-0"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-gray-900 truncate">{file.name}</div>
+                          <div className="text-xs md:text-sm text-gray-500 truncate">
+                            Share: {window.location.origin}/i/{file.slug}
+                          </div>
                         </div>
+                        <UploadPageCopyButton 
+                          slug={file.slug}
+                          className="touch-target px-3 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600 transition-colors self-end sm:self-auto"
+                        />
                       </div>
-                      <UploadPageCopyButton 
-                        slug={file.slug}
-                        className="px-3 py-1 bg-blue-500 text-white rounded text-sm hover:bg-blue-600"
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="hidden md:block text-center py-8 text-gray-500">
+                <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+                <p className="text-base md:text-lg">Drop files anywhere to upload</p>
+              </div>
+            </div>
+          )}
+
+          {/* Files Section */}
+          {files.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="mb-6">
+                <svg className="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 2a1 1 0 000 2h6a1 1 0 100-2H9zM4 5a2 2 0 012-2v1a1 1 0 001 1h6a1 1 0 001-1V3a2 2 0 012 2v6h-2V9a1 1 0 10-2 0v2H8V9a1 1 0 10-2 0v2H4V5z" />
+                </svg>
+              </div>
+              <p className="text-gray-500 text-base md:text-lg mb-4">No files uploaded yet.</p>
+              {!session && (
+                <Link
+                  href="/login"
+                  className="touch-target inline-block px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Login to Upload Files
+                </Link>
+              )}
+            </div>
+          ) : (
+            <>
+              {/* Desktop bulk controls */}
+              {session && files.length > 0 && (
+                <div className="hidden md:flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-4">
+                    <label className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedFiles.length === files.length}
+                        onChange={handleSelectAll}
+                        className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2"
                       />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <div className="text-center py-8 text-gray-500">
-              <svg className="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-              </svg>
-              <p className="text-lg">Drop files anywhere to upload</p>
-            </div>
-          </div>
-        )}
-
-        {files.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No files uploaded yet.</p>
-            {!session && (
-              <Link
-                href="/login"
-                className="mt-4 inline-block px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Login to Upload Files
-              </Link>
-            )}
-          </div>
-        ) : (
-          <>
-            {session && files.length > 0 && (
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <label className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      checked={selectedFiles.length === files.length}
-                      onChange={handleSelectAll}
-                      className="rounded border-gray-300"
-                    />
-                    <span className="text-sm text-gray-600">
-                      Select all on page ({selectedFiles.length}/{files.length})
-                    </span>
-                  </label>
-                  {selectedFiles.length > 0 && (
+                      <span className="text-sm text-gray-600">
+                        Select all on page ({selectedFiles.length}/{files.length})
+                      </span>
+                    </label>
+                    {selectedFiles.length > 0 && (
+                      <button
+                        onClick={handleBulkDelete}
+                        disabled={isDeleting}
+                        className="touch-target px-3 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600 disabled:opacity-50 transition-colors"
+                      >
+                        {isDeleting ? "Deleting..." : `Delete ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}`}
+                      </button>
+                    )}
                     <button
-                      onClick={handleBulkDelete}
+                      onClick={handleDeleteAll}
                       disabled={isDeleting}
-                      className="px-3 py-1 bg-red-500 text-white rounded text-sm hover:bg-red-600 disabled:opacity-50"
+                      className="touch-target px-3 py-2 bg-red-700 text-white rounded-lg text-sm hover:bg-red-800 disabled:opacity-50 transition-colors"
                     >
-                      {isDeleting ? "Deleting..." : `Delete ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}`}
+                      {isDeleting ? "Deleting..." : `Delete All ${totalCount} Files`}
                     </button>
-                  )}
-                  <button
-                    onClick={handleDeleteAll}
-                    disabled={isDeleting}
-                    className="px-3 py-1 bg-red-700 text-white rounded text-sm hover:bg-red-800 disabled:opacity-50"
-                  >
-                    {isDeleting ? "Deleting..." : `Delete All ${totalCount} Files`}
-                  </button>
+                  </div>
                 </div>
+              )}
+              
+              {/* File grid */}
+              <div className="space-y-2 md:space-y-4">
+                {files.map((file) => (
+                  <div key={file.id} className="animate-fade-in">
+                    <SwipeableFileCard
+                      file={file}
+                      isSelected={selectedFiles.includes(file.id)}
+                      onSelect={() => handleFileSelect(file.id)}
+                      onDelete={() => handleDeleteFile(file.id)}
+                      isDeleting={isDeleting}
+                      showCheckbox={!!session}
+                      formatFileSize={formatFileSize}
+                      getFileIcon={getFileIcon}
+                    />
+                  </div>
+                ))}
               </div>
-            )}
-            
-            <div className="grid gap-4">
-              {files.map((file) => (
-                <div key={file.id} className="animate-fade-in">
-                  <SwipeableFileCard
-                    file={file}
-                    isSelected={selectedFiles.includes(file.id)}
-                    onSelect={() => handleFileSelect(file.id)}
-                    onDelete={() => handleDeleteFile(file.id)}
-                    isDeleting={isDeleting}
-                    showCheckbox={!!session}
-                    formatFileSize={formatFileSize}
-                    getFileIcon={getFileIcon}
-                  />
-                </div>
-              ))}
-            </div>
-            
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </>
-        )}
+              
+              {/* Pagination */}
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </>
+          )}
+        </div>
       </div>
       
+      {/* Toast */}
       <Toast 
         message={toastMessage}
         show={showToast}
         onHide={() => setShowToast(false)}
       />
+      
+      {/* Mobile Floating Action Button */}
+      {selectedFiles.length > 0 && (
+        <div className="md:hidden fixed bottom-6 right-6 z-50">
+          <button
+            onClick={handleBulkDelete}
+            disabled={isDeleting}
+            className="w-14 h-14 bg-red-500 hover:bg-red-600 disabled:opacity-50 rounded-full shadow-lg flex items-center justify-center text-white transition-all duration-200 touch-target"
+            aria-label={`Delete ${selectedFiles.length} selected file${selectedFiles.length > 1 ? 's' : ''}`}
+          >
+            {isDeleting ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+            ) : (
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            )}
+          </button>
+          
+          {/* Badge showing count */}
+          <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold min-w-[1.5rem] min-h-[1.5rem]">
+            {selectedFiles.length}
+          </div>
+        </div>
+      )}
     </main>
   );
 
