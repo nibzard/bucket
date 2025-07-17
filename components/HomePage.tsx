@@ -109,6 +109,10 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
       } else {
         setToastMessage("File deleted successfully");
         setShowToast(true);
+        // Hard refresh to bypass cache and reflect actual database state
+        setTimeout(() => {
+          window.location.href = window.location.href + '?refresh=' + Date.now();
+        }, 1000);
       }
     } catch (error) {
       // Revert on error
@@ -148,6 +152,10 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
       } else {
         setToastMessage(`${originalSelected.length} file${originalSelected.length > 1 ? 's' : ''} deleted successfully`);
         setShowToast(true);
+        // Hard refresh to bypass cache and reflect actual database state
+        setTimeout(() => {
+          window.location.href = window.location.href + '?refresh=' + Date.now();
+        }, 1000);
       }
     } catch (error) {
       // Revert on error
@@ -184,6 +192,10 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
       } else {
         setToastMessage(`All ${totalCount} files deleted successfully`);
         setShowToast(true);
+        // Hard refresh to bypass cache and reflect actual database state
+        setTimeout(() => {
+          window.location.href = window.location.href + '?refresh=' + Date.now();
+        }, 1000);
       }
     } catch (error) {
       // Revert on error
@@ -211,15 +223,21 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
         const newFiles = res.map((file) => ({
           name: file.name,
           slug: file.serverData.slug,
-          url: file.url,
+          url: file.ufsUrl,
         }));
         setUploadedFiles((prev) => [...prev, ...newFiles]);
         
         // Auto-copy link for single file uploads
         if (res.length === 1) {
-          navigator.clipboard.writeText(`${window.location.origin}/i/${res[0].serverData.slug}`);
-          setToastMessage("Link copied to clipboard!");
-          setShowToast(true);
+          navigator.clipboard.writeText(`${window.location.origin}/i/${res[0].serverData.slug}`)
+            .then(() => {
+              setToastMessage("Link copied to clipboard!");
+              setShowToast(true);
+            })
+            .catch(() => {
+              setToastMessage("Upload complete!");
+              setShowToast(true);
+            });
         } else {
           setUploadMessage(`Uploaded ${res.length} files successfully!`);
         }
@@ -230,7 +248,7 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
           filename: file.name,
           originalName: file.name,
           fileKey: file.key || "",
-          fileUrl: file.url,
+          fileUrl: file.ufsUrl,
           fileSize: file.size || 0,
           mimeType: file.type || "",
           slug: file.serverData.slug,
