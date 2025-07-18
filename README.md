@@ -1,99 +1,189 @@
-# Bucket
+# 🪣 Bucket
 
-A simple, clean Next.js application for uploading and sharing files using UploadThing.
+### A beautifully simple file sharing platform built with Next.js
 
-## Features
+Share files effortlessly with drag-and-drop uploads, instant previews, and clean shareable links. Perfect for personal use or small teams.
 
-### Core Functionality
-- **Single-user authentication** with username/password stored in environment variables
-- **Drag-and-drop file upload** with real-time progress indication and success feedback
-- **Public file listing** on homepage - accessible without login
-- **Direct file access** via short URLs (`/i/abc123`) that redirect to file content
-- **File previews** for images, videos, audio, and PDFs with clean viewing interface
-- **File metadata storage** in SQLite database with upload timestamps
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js&logoColor=white)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![pnpm](https://img.shields.io/badge/pnpm-8.x-orange?logo=pnpm&logoColor=white)](https://pnpm.io/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-black?logo=vercel&logoColor=white)](https://vercel.com/)
 
-### User Experience
-- **Unified homepage** - file listing and upload in one place
-- **Compact file cards** with clickable file names for viewing
-- **Pagination** for large file collections (20 files per page)
-- **Silent link copying** - no interrupting alerts
-- **Responsive design** with Tailwind CSS
+## 📸 Screenshot
 
-### File Management (Authenticated Users)
-- **Individual file deletion** with confirmation
-- **Bulk selection** with checkboxes and "Select all on page" option
-- **Bulk delete** for selected files
-- **Delete all files** nuclear option for complete cleanup
-- **Real-time file operations** with loading states
+![Bucket App Screenshot](bucket.png)
 
-## Tech Stack
+## ✨ Why Bucket?
 
-- **Next.js 14** with App Router
-- **UploadThing** for file uploads
-- **NextAuth.js** for authentication
-- **Drizzle ORM** with SQLite database
-- **Tailwind CSS** for styling
+- **🎯 Simple & Clean** - No clutter, just upload and share
+- **📱 Mobile First** - Works perfectly on any device
+- **🚀 Lightning Fast** - Built with Next.js 14 and optimized for speed
+- **🔒 Secure** - GitHub OAuth + admin credentials for access control
+- **📦 No Vendor Lock-in** - Your files, your control
+- **🎨 Beautiful Previews** - Images, videos, PDFs, and more
 
-## Setup
+## 🚀 Quick Start
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
+```bash
+# Clone and install
+git clone https://github.com/nibzard/bucket.git
+cd bucket
+pnpm install
 
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env.local
-   ```
-   
-   Edit `.env.local` with your values:
-   - `UPLOADTHING_TOKEN`: Your UploadThing API token
-   - `NEXTAUTH_SECRET`: Generate a random secret using: `openssl rand -base64 32`
-   - `ADMIN_USERNAME`: Username for admin access
-   - `ADMIN_PASSWORD`: Password for admin access
+# Setup environment
+cp .env.example .env.local
+# Edit .env.local with your values
 
-4. Set up the database:
-   ```bash
-   pnpm db:generate
-   pnpm db:push
-   ```
+# Setup database
+pnpm db:generate && pnpm db:push
 
-5. Start the development server:
-   ```bash
-   pnpm dev
-   ```
+# Start developing
+pnpm dev
+```
 
-## Deployment to Vercel
+Visit [localhost:3000](http://localhost:3000) and start uploading!
 
+## 🎯 Features
+
+### 📤 **Upload & Share**
+- Drag-and-drop file upload with real-time progress
+- Generate short, clean URLs for sharing (`/i/abc123`)
+- Support for images, videos, audio, PDFs, and more
+- Direct file access or beautiful preview pages
+
+### 🔐 **Smart Authentication**
+- GitHub OAuth for seamless login
+- Admin credentials for private instances
+- Public file viewing (no login required)
+- Secure file management for authenticated users
+
+### 📱 **Mobile-First Design**
+- Responsive design that works on any device
+- Touch-friendly swipe gestures
+- Optimized for mobile uploads and viewing
+- Clean, minimal interface
+
+### ⚡ **Performance & UX**
+- Lightning-fast uploads with UploadThing
+- Pagination for large collections (20 files per page)
+- Real-time feedback and loading states
+- Optimistic updates for instant feel
+
+### 🛠️ **File Management**
+- Individual file deletion with confirmation
+- Bulk operations with checkboxes
+- "Select all" for quick management
+- Complete cleanup with "delete all" option
+
+<details>
+<summary>🔧 <strong>Tech Stack</strong></summary>
+
+- **Framework**: Next.js 14 with App Router
+- **Database**: Drizzle ORM with Turso/LibSQL
+- **Auth**: NextAuth.js (GitHub + credentials)
+- **Storage**: UploadThing CDN
+- **Styling**: Tailwind CSS
+- **Language**: TypeScript
+- **Package Manager**: pnpm
+
+</details>
+
+## 📋 Detailed Setup
+
+<details>
+<summary><strong>Step-by-step setup guide</strong></summary>
+
+### 1. **Get the code**
+```bash
+git clone https://github.com/nibzard/bucket.git
+cd bucket
+pnpm install
+```
+
+### 2. **Set up UploadThing**
+1. Go to [UploadThing](https://uploadthing.com/) and create an account
+2. Create a new app and get your API token
+3. Keep this token handy for the next step
+
+### 3. **Configure environment variables**
+```bash
+cp .env.example .env.local
+```
+Open `.env.local` and fill in your values (see comments in the file for guidance)
+
+### 4. **Set up your database**
+```bash
+pnpm db:generate  # Generate the database schema
+pnpm db:push      # Apply it to your database
+```
+
+### 5. **Start developing**
+```bash
+pnpm dev
+```
+
+Your app will be available at [localhost:3000](http://localhost:3000)
+
+</details>
+
+## 🚀 Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/nibzard/bucket)
+
+<details>
+<summary><strong>Manual deployment guide</strong></summary>
+
+### Quick Deploy
 1. Push your code to GitHub
 2. Connect your repository to Vercel
-3. Set the following environment variables in Vercel:
-   - `UPLOADTHING_TOKEN`
-   - `NEXTAUTH_URL` (set to your domain, e.g., https://your-app.vercel.app)
-   - `NEXTAUTH_SECRET` (generate using: `openssl rand -base64 32`)
-   - `ADMIN_USERNAME`
-   - `ADMIN_PASSWORD`
+3. Set your environment variables in Vercel dashboard
+4. Deploy! 🎉
 
-4. Deploy!
+### Environment Variables for Production
+Make sure to set these in your Vercel dashboard:
+- `UPLOADTHING_TOKEN` - Your UploadThing API token
+- `NEXTAUTH_URL` - Your domain (e.g., https://your-app.vercel.app)
+- `NEXTAUTH_SECRET` - Generate with: `openssl rand -base64 32`
+- `ADMIN_USERNAME` - Your admin username
+- `ADMIN_PASSWORD` - Your admin password
+- `TURSO_DATABASE_URL` - Your Turso database URL
+- `TURSO_AUTH_TOKEN` - Your Turso auth token
 
-## Usage
+</details>
 
-- **Homepage (`/`)**: View all files publicly, upload files if logged in
-- **Login (`/login`)**: Authenticate with username/password
-- **File view (`/f/{slug}`)**: View individual files with metadata and previews
-- **Direct access (`/i/{slug}`)**: Direct redirect to file content for sharing/embedding
+## 🎯 How to Use
 
-## File Types Supported
+### 👀 **For Visitors**
+- Visit the homepage to browse all uploaded files
+- Click any file name to view it with a beautiful preview
+- Use `/i/{slug}` URLs for direct file access (perfect for sharing)
 
-- **Images**: up to 16MB (JPEG, PNG, WebP, etc.)
-- **Videos**: up to 256MB (MP4, WebM, etc.)
-- **Audio**: up to 64MB (MP3, WAV, etc.)
-- **PDFs**: up to 32MB
-- **Text files**: up to 4MB
-- **Other files**: up to 128MB (any file type)
+### 🔐 **For Authenticated Users**
+- **Login** at `/login` with GitHub or admin credentials
+- **Upload** files by dragging them onto the homepage
+- **Manage** files with delete options and bulk operations
+- **Share** files using the generated short URLs
 
-## API Endpoints
+### 📱 **Mobile Experience**
+- Swipe left/right to navigate between files
+- Touch-friendly interface for easy uploads
+- Responsive design that works on any screen size
+
+## 📁 File Support
+
+| Type | Max Size | Formats |
+|------|----------|---------|
+| **Images** | 16MB | JPEG, PNG, WebP, GIF, SVG |
+| **Videos** | 256MB | MP4, WebM, MOV, AVI |
+| **Audio** | 64MB | MP3, WAV, OGG, M4A |
+| **Documents** | 32MB | PDF |
+| **Text** | 4MB | TXT, MD, JSON, etc. |
+| **Other** | 128MB | Any file type |
+
+<details>
+<summary>🔌 <strong>API Reference</strong></summary>
 
 ### File Operations
 - `GET /api/files/[id]` - Get file metadata
@@ -108,19 +198,14 @@ A simple, clean Next.js application for uploading and sharing files using Upload
 ### Upload
 - `POST /api/uploadthing` - File upload endpoint (auth required)
 
-## Performance Monitoring & Debugging
+</details>
 
-### Features
-- **Comprehensive logging** with structured output and debug modes
-- **Performance monitoring** with metrics collection and analysis
-- **UI synchronization** fixes to eliminate hard refresh patterns
-- **Image loading optimization** with timeout handling and retry logic
-- **Automated testing** with Playwright for UI consistency
-- **Real-time monitoring** with console and server log analysis
+## 🛠️ Development
 
-### Available Scripts
+<details>
+<summary><strong>Available Scripts</strong></summary>
 
-#### Development
+### Development
 ```bash
 pnpm dev                    # Start development server
 pnpm dev:debug             # Start with enhanced debugging
@@ -130,14 +215,13 @@ pnpm lint                  # Run linting
 pnpm typecheck            # Type checking
 ```
 
-#### Database
+### Database
 ```bash
 pnpm db:generate           # Generate database schema
 pnpm db:push              # Push schema to database
 ```
 
-
-#### Monitoring
+### Monitoring & Debugging
 ```bash
 pnpm monitor              # Start server with basic monitoring
 pnpm monitor:test         # Start server and run performance tests
@@ -145,101 +229,70 @@ pnpm monitor:full         # Full monitoring with resource tracking
 pnpm logs:clean           # Clean up old log files
 ```
 
-### Performance Monitoring
-
-#### Real-time Monitoring
-The monitoring system tracks:
-- **API response times** and identifies slow operations
-- **Image loading performance** with retry mechanisms
-- **Memory usage** and resource consumption
-- **UI state synchronization** to prevent inconsistencies
-- **Error tracking** with detailed logging
-
-#### Testing
-Use MCP Playwright tools for testing:
-- **File count consistency** between homepage and gallery views
-- **Delete operation synchronization** with optimistic updates
-- **Bulk operation handling** with proper state management
-- **Pagination state consistency** without page reloads
-- **Gallery image loading performance** with timeout handling
-- **Mobile gesture functionality** and swipe interactions
-- **Error recovery** and network failure handling
-
-#### Debug Mode
-Enable debug mode with:
+### Debug Mode
 ```bash
-DEBUG_MODE=true pnpm dev
+DEBUG_MODE=true pnpm dev  # Enable enhanced logging
 ```
 
-This provides:
-- **Enhanced console logging** for all operations
-- **Performance metrics** for API calls and UI operations
-- **State change tracking** for debugging synchronization issues
-- **Memory usage monitoring** for resource optimization
+</details>
 
-### Key Performance Fixes
-
-1. **Eliminated Hard Refresh Pattern**
-   - Replaced `window.location.reload()` with proper state updates
-   - Fixed UI synchronization between server and client state
-   - Improved user experience with instant feedback
-
-2. **Enhanced Image Loading**
-   - Added timeout handling (10s) with retry logic
-   - Implemented progressive retry with exponential backoff
-   - Added loading states and error recovery mechanisms
-
-3. **Optimized State Management**
-   - Proper cache invalidation without page reloads
-   - Consistent file counts between different views
-   - Optimistic updates with proper rollback on errors
-
-4. **Mobile Optimization**
-   - Improved swipe gesture handling
-   - Better touch interaction feedback
-   - Optimized for mobile performance
-
-### Log Files
-
-When running monitoring scripts, logs are saved to:
-- `logs/server-YYYYMMDD-HHMMSS.log` - Server output
-- `logs/performance-YYYYMMDD-HHMMSS.log` - Performance metrics
-
-### Environment Variables
-
-Additional debugging variables:
-```bash
-DEBUG_MODE=true           # Enable debug logging
-```
-
-## Project Structure
+<details>
+<summary><strong>Project Structure</strong></summary>
 
 ```
 bucket/
-├── app/
-│   ├── api/
-│   │   ├── auth/[...nextauth]/     # NextAuth.js authentication
-│   │   ├── files/                 # File management endpoints
-│   │   └── uploadthing/           # UploadThing integration
-│   ├── f/[slug]/                  # File preview pages
-│   ├── i/[slug]/                  # Direct file access redirects
-│   ├── login/                     # Login page
-│   └── page.tsx                   # Homepage with file listing
-├── components/
-│   ├── Header.tsx                 # Navigation header
-│   ├── HomePage.tsx               # Main file listing and upload
-│   ├── Pagination.tsx             # Pagination controls
-│   ├── ThumbnailCard.tsx          # Gallery image cards
-│   ├── SwipeableFileCard.tsx      # Mobile-optimized file cards
-│   └── *Button.tsx                # Various utility buttons
-├── lib/
-│   ├── auth.ts                    # NextAuth configuration
-│   ├── db/                        # Database schema and connection
-│   ├── logger.ts                  # Comprehensive logging system
-│   ├── performance-monitor.ts     # Performance monitoring utilities
-│   └── uploadthing.ts             # UploadThing client setup
-├── scripts/
-│   └── monitor-performance.sh     # Performance monitoring script
-├── logs/                          # Performance and server logs
-└── drizzle/                       # Database migrations
+├── app/                    # Next.js App Router
+│   ├── api/               # API routes
+│   ├── f/[slug]/          # File preview pages
+│   ├── i/[slug]/          # Direct file access
+│   └── login/             # Authentication
+├── components/            # React components
+├── lib/                   # Utilities and config
+│   ├── auth.ts           # Authentication setup
+│   ├── db/               # Database schema
+│   └── logger.ts         # Logging system
+└── scripts/              # Development scripts
 ```
+
+</details>
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. **🐛 Report Issues** - Found a bug? [Open an issue](https://github.com/nibzard/bucket/issues)
+2. **💡 Suggest Features** - Have an idea? We'd love to hear it!
+3. **🔧 Submit PRs** - Ready to contribute code? Fork and submit a pull request
+4. **📚 Improve Docs** - Help make the documentation better
+
+### Development Setup
+```bash
+git clone https://github.com/nibzard/bucket.git
+cd bucket
+pnpm install
+cp .env.example .env.local
+# Edit .env.local with your values
+pnpm db:generate && pnpm db:push
+pnpm dev
+```
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [UploadThing](https://uploadthing.com/) for amazing file upload infrastructure
+- [NextAuth.js](https://next-auth.js.org/) for seamless authentication
+- [Vercel](https://vercel.com/) for the best deployment experience
+- [Turso](https://turso.tech/) for edge database hosting
+
+---
+
+<div align="center">
+  <strong>Built with ❤️ using Next.js</strong>
+  <br><br>
+  <a href="https://bucket-lake.vercel.app/">🌐 Live Demo</a> •
+  <a href="https://github.com/nibzard/bucket/issues">🐛 Report Bug</a> •
+  <a href="https://github.com/nibzard/bucket/pulls">🔧 Request Feature</a>
+</div>
