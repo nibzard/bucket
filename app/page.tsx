@@ -31,7 +31,7 @@ async function getFiles(page: number = 1, limit: number = 20) {
     filesCount: filesList.length,
     totalCount: totalCountResult[0].count,
     queryTime: `${queryTime}ms`,
-    timestamp: new Date().toISOString(),
+    timestamp: Date.now(),
     performanceNote: queryTime > 1000 ? 'SLOW_QUERY' : 'NORMAL'
   });
   

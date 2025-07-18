@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     serverLogger.info('Bulk delete request parsed', {
       requestId,
       fileCount: fileIds?.length || 0,
-      userId: session.user?.email
+      userId: session.user?.email || undefined
     });
     
     if (!Array.isArray(fileIds) || fileIds.length === 0) {

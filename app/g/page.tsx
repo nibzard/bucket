@@ -19,7 +19,7 @@ async function getAllFiles() {
   serverLogger.info('Gallery page data fetch', {
     filesCount: allFiles.length,
     queryTime: `${queryTime}ms`,
-    timestamp: new Date().toISOString(),
+    timestamp: Date.now(),
     performanceNote: queryTime > 1000 ? 'SLOW_QUERY' : 'NORMAL'
   });
   
