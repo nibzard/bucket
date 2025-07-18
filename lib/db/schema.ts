@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, index } from "drizzle-orm/sqlite-core";
 import { nanoid } from "nanoid";
 
 export const files = sqliteTable("files", {
@@ -15,4 +15,6 @@ export const files = sqliteTable("files", {
   uploadedAt: integer("uploaded_at", { mode: "timestamp" })
     .notNull()
     .$defaultFn(() => new Date()),
-});
+}, (table) => ({
+  uploadedAtIdx: index("idx_files_uploaded_at").on(table.uploadedAt),
+}));

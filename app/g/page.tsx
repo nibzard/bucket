@@ -1,7 +1,7 @@
 import { db, files } from "@/lib/db";
 import { desc } from "drizzle-orm";
 import { ThumbnailGrid } from "@/components/ThumbnailGrid";
-import { serverLogger } from "@/lib/logger";
+import { serverLogger, generateRequestId } from "@/lib/logger";
 
 // Force dynamic rendering to avoid cache issues
 export const dynamic = 'force-dynamic';
@@ -9,6 +9,7 @@ export const revalidate = 0;
 
 async function getAllFiles() {
   const startTime = Date.now();
+  const requestId = generateRequestId();
   
   const allFiles = await db
     .select()
@@ -17,6 +18,7 @@ async function getAllFiles() {
 
   const queryTime = Date.now() - startTime;
   serverLogger.info('Gallery page data fetch', {
+    requestId,
     filesCount: allFiles.length,
     queryTime: `${queryTime}ms`,
     timestamp: Date.now(),
@@ -25,6 +27,7 @@ async function getAllFiles() {
   
   if (queryTime > 1000) {
     serverLogger.warn('Slow database query detected', {
+      requestId,
       operation: 'getAllFiles',
       queryTime: `${queryTime}ms`,
       threshold: '1000ms'

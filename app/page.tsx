@@ -1,7 +1,7 @@
 import { db, files } from "@/lib/db";
 import { desc, count } from "drizzle-orm";
 import { HomePage } from "@/components/HomePage";
-import { serverLogger } from "@/lib/logger";
+import { serverLogger, generateRequestId } from "@/lib/logger";
 
 // Force dynamic rendering to avoid cache issues
 export const dynamic = 'force-dynamic';
@@ -10,6 +10,7 @@ export const revalidate = 0;
 async function getFiles(page: number = 1, limit: number = 20) {
   const startTime = Date.now();
   const offset = (page - 1) * limit;
+  const requestId = generateRequestId();
   
   const [filesList, totalCountResult] = await Promise.all([
     db
@@ -25,6 +26,7 @@ async function getFiles(page: number = 1, limit: number = 20) {
 
   const queryTime = Date.now() - startTime;
   serverLogger.info('Homepage data fetch', {
+    requestId,
     page,
     limit,
     offset,
@@ -37,6 +39,7 @@ async function getFiles(page: number = 1, limit: number = 20) {
   
   if (queryTime > 1000) {
     serverLogger.warn('Slow database query detected', {
+      requestId,
       operation: 'getFiles',
       page,
       queryTime: `${queryTime}ms`,

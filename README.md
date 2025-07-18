@@ -13,7 +13,7 @@ Share files effortlessly with drag-and-drop uploads, instant previews, and clean
 
 ## 📸 Screenshot
 
-![Bucket App Screenshot](bucket.png)
+![Bucket App Screenshot](bucket.jpeg)
 
 ## ✨ Why Bucket?
 
