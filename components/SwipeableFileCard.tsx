@@ -111,8 +111,9 @@ export function SwipeableFileCard({
   return (
     <div
       ref={cardRef}
-      className={`swipe-container bg-white border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 group ${
-        isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+      data-testid="file-card"
+      className={`swipe-container bg-card border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 group ${
+        isSelected ? 'border-accent bg-accent/5' : 'border-border hover:border-border-hover'
       }`}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
@@ -152,7 +153,7 @@ export function SwipeableFileCard({
 
       {/* Main content */}
       <div 
-        className={`swipe-content relative bg-white rounded-lg z-10 ${isSwipeActive ? 'swiping' : ''}`}
+        className={`swipe-content relative bg-card rounded-lg z-10 ${isSwipeActive ? 'swiping' : ''}`}
         style={{ transform: `translateX(${clampedDistance}px)` }}
       >
         {/* Mobile layout */}
@@ -172,17 +173,17 @@ export function SwipeableFileCard({
 
             {/* File icon */}
             <div className="flex-shrink-0">
-              <span className="inline-flex items-center justify-center w-10 h-10 text-sm font-bold text-gray-600 bg-gray-100 rounded-lg">
+              <span className="inline-flex items-center justify-center w-10 h-10 text-sm font-bold text-muted-foreground bg-surface rounded-lg">
                 {getFileIcon(file.mimeType)}
               </span>
             </div>
 
             {/* File info */}
             <div className="flex-1 min-w-0">
-              <div className="font-medium text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+              <div className="font-medium text-card-foreground truncate group-hover:text-accent transition-colors">
                 {file.originalName}
               </div>
-              <div className="flex items-center space-x-2 text-xs text-gray-500">
+              <div className="flex items-center space-x-2 text-xs text-muted-foreground">
                 <span>{formatFileSize(file.fileSize)}</span>
                 <span>•</span>
                 <span>
@@ -199,16 +200,18 @@ export function SwipeableFileCard({
             <div className="hidden sm:flex items-center space-x-2">
               <CopyLinkButton 
                 slug={file.slug}
-                className="touch-target px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-sm transition-colors"
+                className="touch-target px-3 py-2 bg-surface text-card-foreground rounded-lg hover:bg-surface-hover text-sm transition-colors relative z-10"
               />
               {showCheckbox && (
                 <button
+                  data-testid="delete-button"
                   onClick={(e) => {
+                    e.preventDefault();
                     e.stopPropagation();
                     onDelete();
                   }}
                   disabled={isDeleting}
-                  className="touch-target px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 text-sm transition-colors"
+                  className="touch-target px-3 py-2 bg-destructive text-destructive-foreground rounded-lg hover:bg-destructive/90 disabled:opacity-50 text-sm transition-colors relative z-10"
                   aria-label={`Delete ${file.originalName}`}
                 >
                   {isDeleting ? (
@@ -224,7 +227,7 @@ export function SwipeableFileCard({
             <div className="sm:hidden flex-shrink-0">
               <Link 
                 href={`/i/${file.slug}`}
-                className="touch-target p-2 text-gray-400 hover:text-gray-600 transition-colors"
+                className="touch-target p-2 text-muted-foreground hover:text-card-foreground transition-colors"
                 prefetch={false}
                 aria-label={`View ${file.originalName}`}
               >
@@ -247,7 +250,7 @@ export function SwipeableFileCard({
       
       {/* Toast notification */}
       {showToast && (
-        <div className="absolute top-2 left-2 right-2 bg-green-500 text-white text-xs px-3 py-2 rounded-lg text-center animate-fade-in z-30">
+        <div className="absolute top-2 left-2 right-2 bg-success text-success-foreground text-xs px-3 py-2 rounded-lg text-center animate-fade-in z-30">
           <div className="flex items-center justify-center space-x-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

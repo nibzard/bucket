@@ -37,3 +37,11 @@ next-env.d.ts
 # database
 /sqlite.db
 /drizzle
+
+# webpack cache
+.webpack/
+.cache/
+
+# logs
+/logs
+*.log

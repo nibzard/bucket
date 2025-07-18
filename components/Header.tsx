@@ -13,24 +13,27 @@ export function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   
+  
   const closeMobileNav = useCallback(() => {
     setIsMobileNavOpen(false);
   }, []);
+
 
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        console.log('Clicking outside, closing menu');
         setIsUserMenuOpen(false);
       }
     };
 
     if (isUserMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('click', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('click', handleClickOutside);
     };
   }, [isUserMenuOpen]);
 
@@ -41,7 +44,7 @@ export function Header() {
 
   return (
     <>
-      <header className="bg-white shadow-sm border-b sticky top-0 z-30">
+      <header className="bg-surface shadow-sm border-b border-border sticky top-0 z-30">
         <div className="mobile-safe-padding">
           <div className="flex justify-between items-center h-16 px-4 md:px-6">
             
@@ -50,7 +53,7 @@ export function Header() {
               {/* Mobile hamburger menu */}
               <button
                 onClick={() => setIsMobileNavOpen(true)}
-                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target"
+                className="md:hidden p-2 rounded-lg hover:bg-surface-hover transition-colors touch-target"
                 aria-label="Open navigation menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,7 +62,7 @@ export function Header() {
               </button>
 
               {/* Logo */}
-              <Link href="/" className="text-xl md:text-2xl font-bold text-gray-900">
+              <Link href="/" className="text-xl md:text-2xl font-bold text-foreground">
                 Bucket
               </Link>
 
@@ -71,8 +74,8 @@ export function Header() {
                     href={item.href}
                     className={`text-sm font-medium transition-colors touch-target flex items-center ${
                       pathname === item.href
-                        ? "text-blue-600"
-                        : "text-gray-600 hover:text-gray-900"
+                        ? "text-accent"
+                        : "text-muted-foreground hover:text-foreground"
                     }`}
                   >
                     {item.label}
@@ -84,30 +87,54 @@ export function Header() {
             {/* Desktop: Auth section */}
             <div className="hidden md:flex items-center space-x-4">
               {status === "loading" ? (
-                <div className="text-gray-500 text-sm">Loading...</div>
+                <div className="w-8 h-8 bg-surface-hover rounded-full animate-pulse"></div>
               ) : session ? (
                 <div className="relative" ref={userMenuRef}>
                   <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors touch-target"
+                    onClick={(e) => {
+                      console.log('DESKTOP: Avatar clicked');
+                      e.stopPropagation();
+                      setIsUserMenuOpen(!isUserMenuOpen);
+                    }}
+                    className="w-8 h-8 bg-surface-hover rounded-full flex items-center justify-center hover:bg-surface-active transition-colors touch-target"
                   >
-                    <span className="text-xs font-medium text-gray-600">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {session.user?.email?.charAt(0).toUpperCase() || "U"}
                     </span>
                   </button>
                   
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
+                    <div 
+                      className="absolute right-0 mt-2 w-48 bg-popover rounded-lg shadow-lg border border-border z-[9999] pointer-events-auto"
+                      onClick={(e) => {
+                        console.log('DESKTOP: Dropdown clicked');
+                        e.stopPropagation();
+                      }}
+                    >
                       <div className="py-2">
                         <div className="px-4 py-2 border-b">
-                          <p className="text-sm font-medium text-gray-900">Admin</p>
+                          <p className="text-sm font-medium text-popover-foreground">Admin</p>
                         </div>
                         <button
-                          onClick={() => {
-                            signOut();
+                          onClick={async (e) => {
+                            console.log('DESKTOP: Sign out clicked');
+                            e.preventDefault();
+                            e.stopPropagation();
                             setIsUserMenuOpen(false);
+                            console.log('DESKTOP: Starting sign out process');
+                            await signOut({ 
+                              callbackUrl: '/',
+                              redirect: false 
+                            });
+                            console.log('DESKTOP: Sign out completed, redirecting');
+                            // Force a hard reload to clear session state
+                            window.location.href = '/';
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          onMouseDown={(e) => {
+                            console.log('DESKTOP: Sign out mousedown');
+                            e.stopPropagation();
+                          }}
+                          className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-surface-hover transition-colors cursor-pointer"
                         >
                           Sign Out
                         </button>
@@ -118,7 +145,7 @@ export function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm transition-colors touch-target"
+                  className="px-3 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 text-sm transition-colors touch-target"
                 >
                   Sign In
                 </Link>
@@ -128,30 +155,44 @@ export function Header() {
             {/* Mobile: Auth button */}
             <div className="md:hidden">
               {status === "loading" ? (
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-8 h-8 bg-surface-hover rounded-full animate-pulse"></div>
               ) : session ? (
                 <div className="relative" ref={userMenuRef}>
                   <button
-                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center hover:bg-gray-300 transition-colors touch-target"
+                    onClick={(e) => {
+                      console.log('MOBILE: Avatar clicked');
+                      e.stopPropagation();
+                      setIsUserMenuOpen(!isUserMenuOpen);
+                    }}
+                    className="w-8 h-8 bg-surface-hover rounded-full flex items-center justify-center hover:bg-surface-active transition-colors touch-target"
                   >
-                    <span className="text-xs font-medium text-gray-600">
+                    <span className="text-xs font-medium text-muted-foreground">
                       {session.user?.email?.charAt(0).toUpperCase() || "U"}
                     </span>
                   </button>
                   
                   {isUserMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border z-50">
+                    <div className="absolute right-0 mt-2 w-48 bg-popover rounded-lg shadow-lg border border-border z-[9999] pointer-events-auto">
                       <div className="py-2">
                         <div className="px-4 py-2 border-b">
-                          <p className="text-sm font-medium text-gray-900">Admin</p>
+                          <p className="text-sm font-medium text-popover-foreground">Admin</p>
                         </div>
                         <button
-                          onClick={() => {
-                            signOut();
+                          onClick={async (e) => {
+                            console.log('MOBILE: Sign out clicked');
+                            e.preventDefault();
+                            e.stopPropagation();
                             setIsUserMenuOpen(false);
+                            console.log('MOBILE: Starting sign out process');
+                            await signOut({ 
+                              callbackUrl: '/',
+                              redirect: false 
+                            });
+                            console.log('MOBILE: Sign out completed, redirecting');
+                            // Force a hard reload to clear session state
+                            window.location.href = '/';
                           }}
-                          className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                          className="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-surface-hover transition-colors cursor-pointer"
                         >
                           Sign Out
                         </button>
@@ -162,7 +203,7 @@ export function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="px-3 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 text-sm transition-colors touch-target"
+                  className="px-3 py-2 bg-accent text-accent-foreground rounded-lg hover:bg-accent/90 text-sm transition-colors touch-target"
                 >
                   Sign In
                 </Link>

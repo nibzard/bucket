@@ -23,7 +23,7 @@ export function Toast({ message, show, onHide, duration = 3000 }: ToastProps) {
 
   return (
     <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-top-2 duration-300">
-      <div className="bg-green-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2">
+      <div className="bg-success text-success-foreground px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2">
         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
         </svg>

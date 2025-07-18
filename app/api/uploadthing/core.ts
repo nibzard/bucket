@@ -4,6 +4,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { db, files } from "@/lib/db";
 import { nanoid } from "nanoid";
+import { serverLogger } from "@/lib/logger";
+import { revalidatePath } from "next/cache";
 
 const f = createUploadthing();
 
@@ -26,23 +28,71 @@ export const ourFileRouter = {
       return { userId: (session.user as any).id || "admin" };
     })
     .onUploadComplete(async ({ metadata, file }) => {
+      const startTime = Date.now();
       const slug = nanoid(8);
       
-      await db.insert(files).values({
-        filename: file.name,
-        originalName: file.name,
-        fileKey: file.key,
-        fileUrl: file.url,
+      serverLogger.info('Upload complete callback started', {
+        fileName: file.name,
         fileSize: file.size,
         mimeType: file.type,
+        fileKey: file.key,
         slug,
+        userId: metadata.userId
       });
+      
+      try {
+        // Insert into database
+        const dbStartTime = Date.now();
+        await db.insert(files).values({
+          filename: file.name,
+          originalName: file.name,
+          fileKey: file.key,
+          fileUrl: file.ufsUrl,
+          fileSize: file.size,
+          mimeType: file.type,
+          slug,
+        });
+        
+        const dbInsertTime = Date.now() - dbStartTime;
+        serverLogger.info('File inserted into database', {
+          slug,
+          fileName: file.name,
+          dbInsertTime: `${dbInsertTime}ms`
+        });
+        
+        // Invalidate Next.js cache for pages that show file listings
+        revalidatePath('/');
+        revalidatePath('/g');
+        revalidatePath('/files');
+        
+        serverLogger.info('Cache invalidation triggered', {
+          slug,
+          paths: ['/', '/g', '/files']
+        });
+        
+        const totalTime = Date.now() - startTime;
+        serverLogger.info('Upload complete callback finished', {
+          slug,
+          fileName: file.name,
+          totalTime: `${totalTime}ms`,
+          success: true
+        });
 
-      return { 
-        uploadedBy: metadata.userId,
-        slug,
-        url: file.url 
-      };
+        return { 
+          uploadedBy: metadata.userId,
+          slug,
+          url: file.ufsUrl 
+        };
+      } catch (error) {
+        const totalTime = Date.now() - startTime;
+        serverLogger.error('Upload complete callback failed', error as Error, {
+          slug,
+          fileName: file.name,
+          totalTime: `${totalTime}ms`,
+          fileKey: file.key
+        });
+        throw error;
+      }
     }),
 } satisfies FileRouter;
 

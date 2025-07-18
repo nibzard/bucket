@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { UploadDropzone } from "@/lib/uploadthing";
 import { uploadFiles } from "@/lib/uploadthing-utils";
@@ -49,6 +50,7 @@ function getFileIcon(mimeType: string) {
 
 export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProps) {
   const { data: session } = useSession();
+  const router = useRouter();
   const [files, setFiles] = useState<FileRecord[]>(initialFiles);
   const [uploadedFiles, setUploadedFiles] = useState<Array<{
     name: string;
@@ -61,15 +63,16 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   const [isDeleting, setIsDeleting] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [actualTotalCount, setActualTotalCount] = useState(totalCount);
   
   const itemsPerPage = 20;
   const totalPages = Math.ceil(totalCount / itemsPerPage);
 
   const handlePageChange = (page: number) => {
+    console.log(`[HomePage] Page change requested: ${currentPage} -> ${page}`);
     const url = new URL(window.location.href);
     url.searchParams.set('page', page.toString());
-    window.history.pushState({}, '', url.toString());
-    window.location.reload();
+    router.push(url.toString());
   };
 
   const handleFileSelect = (fileId: string) => {
@@ -91,10 +94,14 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   const handleDeleteFile = async (fileId: string) => {
     if (!confirm("Are you sure you want to delete this file?")) return;
     
+    console.log(`[HomePage] Deleting file: ${fileId}`);
+    
     // Optimistic update - remove file immediately
     const originalFiles = files;
+    const fileToDelete = files.find(f => f.id === fileId);
     setFiles(prev => prev.filter(file => file.id !== fileId));
     setSelectedFiles(prev => prev.filter(id => id !== fileId));
+    setActualTotalCount(prev => prev - 1);
     
     try {
       const response = await fetch(`/api/files/${fileId}`, {
@@ -103,20 +110,22 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
       
       if (!response.ok) {
         // Revert on failure
+        console.error(`[HomePage] Delete failed for file ${fileId}:`, response.status);
         setFiles(originalFiles);
+        setActualTotalCount(prev => prev + 1);
         setToastMessage("Failed to delete file");
         setShowToast(true);
       } else {
+        console.log(`[HomePage] File deleted successfully: ${fileId}`);
         setToastMessage("File deleted successfully");
         setShowToast(true);
-        // Hard refresh to bypass cache and reflect actual database state
-        setTimeout(() => {
-          window.location.href = window.location.href + '?refresh=' + Date.now();
-        }, 1000);
+        // No hard refresh - state is already updated optimistically
       }
     } catch (error) {
       // Revert on error
+      console.error(`[HomePage] Delete error for file ${fileId}:`, error);
       setFiles(originalFiles);
+      setActualTotalCount(prev => prev + 1);
       setToastMessage("Error deleting file");
       setShowToast(true);
     }
@@ -127,11 +136,15 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
     
     if (!confirm(`Are you sure you want to delete ${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''}?`)) return;
     
+    console.log(`[HomePage] Bulk deleting ${selectedFiles.length} files:`, selectedFiles);
+    
     // Optimistic update - remove files immediately
     const originalFiles = files;
     const originalSelected = selectedFiles;
+    const filesToDelete = files.filter(file => selectedFiles.includes(file.id));
     setFiles(prev => prev.filter(file => !selectedFiles.includes(file.id)));
     setSelectedFiles([]);
+    setActualTotalCount(prev => prev - originalSelected.length);
     setIsDeleting(true);
     
     try {
@@ -145,22 +158,24 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
       
       if (!response.ok) {
         // Revert on failure
+        console.error(`[HomePage] Bulk delete failed:`, response.status);
         setFiles(originalFiles);
         setSelectedFiles(originalSelected);
+        setActualTotalCount(prev => prev + originalSelected.length);
         setToastMessage("Failed to delete files");
         setShowToast(true);
       } else {
+        console.log(`[HomePage] Bulk delete successful: ${originalSelected.length} files`);
         setToastMessage(`${originalSelected.length} file${originalSelected.length > 1 ? 's' : ''} deleted successfully`);
         setShowToast(true);
-        // Hard refresh to bypass cache and reflect actual database state
-        setTimeout(() => {
-          window.location.href = window.location.href + '?refresh=' + Date.now();
-        }, 1000);
+        // No hard refresh - state is already updated optimistically
       }
     } catch (error) {
       // Revert on error
+      console.error(`[HomePage] Bulk delete error:`, error);
       setFiles(originalFiles);
       setSelectedFiles(originalSelected);
+      setActualTotalCount(prev => prev + originalSelected.length);
       setToastMessage("Error deleting files");
       setShowToast(true);
     } finally {
@@ -169,13 +184,17 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   };
 
   const handleDeleteAll = async () => {
-    if (!confirm(`Are you sure you want to delete ALL ${totalCount} files? This action cannot be undone.`)) return;
+    if (!confirm(`Are you sure you want to delete ALL ${actualTotalCount} files? This action cannot be undone.`)) return;
+    
+    console.log(`[HomePage] Deleting all ${actualTotalCount} files`);
     
     // Optimistic update - clear all files immediately
     const originalFiles = files;
     const originalSelected = selectedFiles;
+    const originalCount = actualTotalCount;
     setFiles([]);
     setSelectedFiles([]);
+    setActualTotalCount(0);
     setIsDeleting(true);
     
     try {
@@ -185,22 +204,24 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
       
       if (!response.ok) {
         // Revert on failure
+        console.error(`[HomePage] Delete all failed:`, response.status);
         setFiles(originalFiles);
         setSelectedFiles(originalSelected);
+        setActualTotalCount(originalCount);
         setToastMessage("Failed to delete all files");
         setShowToast(true);
       } else {
-        setToastMessage(`All ${totalCount} files deleted successfully`);
+        console.log(`[HomePage] Delete all successful: ${originalCount} files`);
+        setToastMessage(`All ${originalCount} files deleted successfully`);
         setShowToast(true);
-        // Hard refresh to bypass cache and reflect actual database state
-        setTimeout(() => {
-          window.location.href = window.location.href + '?refresh=' + Date.now();
-        }, 1000);
+        // No hard refresh - state is already updated optimistically
       }
     } catch (error) {
       // Revert on error
+      console.error(`[HomePage] Delete all error:`, error);
       setFiles(originalFiles);
       setSelectedFiles(originalSelected);
+      setActualTotalCount(originalCount);
       setToastMessage("Error deleting all files");
       setShowToast(true);
     } finally {
@@ -211,6 +232,7 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
   const handleCustomUpload = async (acceptedFiles: File[]) => {
     if (!session) return;
     
+    console.log(`[HomePage] Uploading ${acceptedFiles.length} files`);
     setIsUploading(true);
     setUploadMessage("");
     
@@ -220,6 +242,7 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
       });
       
       if (res) {
+        console.log(`[HomePage] Upload successful: ${res.length} files`);
         const newFiles = res.map((file) => ({
           name: file.name,
           slug: file.serverData.slug,
@@ -256,6 +279,7 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
         }));
         
         setFiles((prev) => [...newFileObjects, ...prev]);
+        setActualTotalCount(prev => prev + res.length);
         
         // Clear upload state after short delay
         setTimeout(() => {
@@ -264,7 +288,7 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
         }, 3000);
       }
     } catch (error) {
-      console.error("Upload error:", error);
+      console.error("[HomePage] Upload error:", error);
       setUploadMessage("Upload failed. Please try again.");
     } finally {
       setIsUploading(false);
@@ -279,7 +303,7 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
           <div className="mb-6 md:mb-8">
             <h1 className="text-2xl md:text-3xl font-bold mb-2 text-gray-900">Files</h1>
             <p className="text-sm md:text-base text-gray-600">
-              {totalCount} {totalCount === 1 ? 'file' : 'files'} total
+              {actualTotalCount} {actualTotalCount === 1 ? 'file' : 'files'} total
             </p>
           </div>
 
@@ -377,7 +401,7 @@ export function HomePage({ initialFiles, totalCount, currentPage }: HomePageProp
                       disabled={isDeleting}
                       className="touch-target px-3 py-2 bg-red-700 text-white rounded-lg text-sm hover:bg-red-800 disabled:opacity-50 transition-colors"
                     >
-                      {isDeleting ? "Deleting..." : `Delete All ${totalCount} Files`}
+                      {isDeleting ? "Deleting..." : `Delete All ${actualTotalCount} Files`}
                     </button>
                   </div>
                 </div>

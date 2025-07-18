@@ -1,12 +1,35 @@
 import { db, files } from "@/lib/db";
 import { desc } from "drizzle-orm";
 import { ThumbnailGrid } from "@/components/ThumbnailGrid";
+import { serverLogger } from "@/lib/logger";
+
+// Force dynamic rendering to avoid cache issues
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 async function getAllFiles() {
+  const startTime = Date.now();
+  
   const allFiles = await db
     .select()
     .from(files)
     .orderBy(desc(files.uploadedAt));
+
+  const queryTime = Date.now() - startTime;
+  serverLogger.info('Gallery page data fetch', {
+    filesCount: allFiles.length,
+    queryTime: `${queryTime}ms`,
+    timestamp: new Date().toISOString(),
+    performanceNote: queryTime > 1000 ? 'SLOW_QUERY' : 'NORMAL'
+  });
+  
+  if (queryTime > 1000) {
+    serverLogger.warn('Slow database query detected', {
+      operation: 'getAllFiles',
+      queryTime: `${queryTime}ms`,
+      threshold: '1000ms'
+    });
+  }
 
   return allFiles;
 }

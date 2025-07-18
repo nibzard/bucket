@@ -39,7 +39,7 @@ A simple, clean Next.js application for uploading and sharing files using Upload
 1. Clone the repository
 2. Install dependencies:
    ```bash
-   npm install
+   pnpm install
    ```
 
 3. Set up environment variables:
@@ -55,13 +55,13 @@ A simple, clean Next.js application for uploading and sharing files using Upload
 
 4. Set up the database:
    ```bash
-   npm run db:generate
-   npm run db:push
+   pnpm db:generate
+   pnpm db:push
    ```
 
 5. Start the development server:
    ```bash
-   npm run dev
+   pnpm dev
    ```
 
 ## Deployment to Vercel
@@ -108,6 +108,110 @@ A simple, clean Next.js application for uploading and sharing files using Upload
 ### Upload
 - `POST /api/uploadthing` - File upload endpoint (auth required)
 
+## Performance Monitoring & Debugging
+
+### Features
+- **Comprehensive logging** with structured output and debug modes
+- **Performance monitoring** with metrics collection and analysis
+- **UI synchronization** fixes to eliminate hard refresh patterns
+- **Image loading optimization** with timeout handling and retry logic
+- **Automated testing** with Playwright for UI consistency
+- **Real-time monitoring** with console and server log analysis
+
+### Available Scripts
+
+#### Development
+```bash
+pnpm dev                    # Start development server
+pnpm dev:debug             # Start with enhanced debugging
+pnpm build                 # Build for production
+pnpm start                 # Start production server
+pnpm lint                  # Run linting
+pnpm typecheck            # Type checking
+```
+
+#### Database
+```bash
+pnpm db:generate           # Generate database schema
+pnpm db:push              # Push schema to database
+```
+
+
+#### Monitoring
+```bash
+pnpm monitor              # Start server with basic monitoring
+pnpm monitor:test         # Start server and run performance tests
+pnpm monitor:full         # Full monitoring with resource tracking
+pnpm logs:clean           # Clean up old log files
+```
+
+### Performance Monitoring
+
+#### Real-time Monitoring
+The monitoring system tracks:
+- **API response times** and identifies slow operations
+- **Image loading performance** with retry mechanisms
+- **Memory usage** and resource consumption
+- **UI state synchronization** to prevent inconsistencies
+- **Error tracking** with detailed logging
+
+#### Testing
+Use MCP Playwright tools for testing:
+- **File count consistency** between homepage and gallery views
+- **Delete operation synchronization** with optimistic updates
+- **Bulk operation handling** with proper state management
+- **Pagination state consistency** without page reloads
+- **Gallery image loading performance** with timeout handling
+- **Mobile gesture functionality** and swipe interactions
+- **Error recovery** and network failure handling
+
+#### Debug Mode
+Enable debug mode with:
+```bash
+DEBUG_MODE=true pnpm dev
+```
+
+This provides:
+- **Enhanced console logging** for all operations
+- **Performance metrics** for API calls and UI operations
+- **State change tracking** for debugging synchronization issues
+- **Memory usage monitoring** for resource optimization
+
+### Key Performance Fixes
+
+1. **Eliminated Hard Refresh Pattern**
+   - Replaced `window.location.reload()` with proper state updates
+   - Fixed UI synchronization between server and client state
+   - Improved user experience with instant feedback
+
+2. **Enhanced Image Loading**
+   - Added timeout handling (10s) with retry logic
+   - Implemented progressive retry with exponential backoff
+   - Added loading states and error recovery mechanisms
+
+3. **Optimized State Management**
+   - Proper cache invalidation without page reloads
+   - Consistent file counts between different views
+   - Optimistic updates with proper rollback on errors
+
+4. **Mobile Optimization**
+   - Improved swipe gesture handling
+   - Better touch interaction feedback
+   - Optimized for mobile performance
+
+### Log Files
+
+When running monitoring scripts, logs are saved to:
+- `logs/server-YYYYMMDD-HHMMSS.log` - Server output
+- `logs/performance-YYYYMMDD-HHMMSS.log` - Performance metrics
+
+### Environment Variables
+
+Additional debugging variables:
+```bash
+DEBUG_MODE=true           # Enable debug logging
+```
+
 ## Project Structure
 
 ```
@@ -125,10 +229,17 @@ bucket/
 │   ├── Header.tsx                 # Navigation header
 │   ├── HomePage.tsx               # Main file listing and upload
 │   ├── Pagination.tsx             # Pagination controls
+│   ├── ThumbnailCard.tsx          # Gallery image cards
+│   ├── SwipeableFileCard.tsx      # Mobile-optimized file cards
 │   └── *Button.tsx                # Various utility buttons
 ├── lib/
 │   ├── auth.ts                    # NextAuth configuration
 │   ├── db/                        # Database schema and connection
+│   ├── logger.ts                  # Comprehensive logging system
+│   ├── performance-monitor.ts     # Performance monitoring utilities
 │   └── uploadthing.ts             # UploadThing client setup
+├── scripts/
+│   └── monitor-performance.sh     # Performance monitoring script
+├── logs/                          # Performance and server logs
 └── drizzle/                       # Database migrations
 ```

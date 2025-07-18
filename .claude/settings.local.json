@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "WebFetch(domain:docs.uploadthing.com)",
-      "Bash(npx create-next-app:*)"
+      "Bash(npx create-next-app:*)",
+      "Bash(vercel:*)",
+      "mcp__playwright__browser_wait_for",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_snapshot",
+      "mcp__playwright__browser_click",
+      "mcp__playwright__browser_handle_dialog",
+      "mcp__playwright__browser_console_messages"
     ],
     "deny": []
   }

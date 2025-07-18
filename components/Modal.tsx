@@ -79,7 +79,7 @@ export function Modal({
       {/* Modal */}
       <div
         ref={modalRef}
-        className={`relative bg-white rounded-lg shadow-xl w-full ${sizeClasses[size]} ${
+        className={`relative bg-popover rounded-lg shadow-xl w-full ${sizeClasses[size]} ${
           variant === "center" ? "mx-auto" : ""
         } animate-fade-in`}
         role="dialog"
@@ -88,12 +88,12 @@ export function Modal({
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
-          <h2 id="modal-title" className="text-lg font-semibold text-gray-900">
+          <h2 id="modal-title" className="text-lg font-semibold text-popover-foreground">
             {title}
           </h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target"
+            className="p-2 rounded-lg hover:bg-surface-hover transition-colors touch-target"
             aria-label="Close modal"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -157,24 +157,24 @@ export function BottomSheetModal({
       <div className="md:hidden absolute bottom-0 left-0 right-0 animate-slide-up">
         <div
           ref={sheetRef}
-          className="bg-white rounded-t-lg shadow-xl max-h-[90vh] overflow-hidden"
+          className="bg-popover rounded-t-lg shadow-xl max-h-[90vh] overflow-hidden"
           role="dialog"
           aria-modal="true"
           aria-labelledby="bottomsheet-title"
         >
           {/* Handle */}
           <div className="flex justify-center py-3">
-            <div className="w-8 h-1 bg-gray-300 rounded-full" />
+            <div className="w-8 h-1 bg-border rounded-full" />
           </div>
 
           {/* Header */}
           <div className="flex items-center justify-between px-4 pb-4">
-            <h2 id="bottomsheet-title" className="text-lg font-semibold text-gray-900">
+            <h2 id="bottomsheet-title" className="text-lg font-semibold text-popover-foreground">
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target"
+              className="p-2 rounded-lg hover:bg-surface-hover transition-colors touch-target"
               aria-label="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,19 +194,19 @@ export function BottomSheetModal({
       <div className="hidden md:flex items-center justify-center p-4 h-full">
         <div
           ref={sheetRef}
-          className="bg-white rounded-lg shadow-xl w-full max-w-md animate-fade-in"
+          className="bg-popover rounded-lg shadow-xl w-full max-w-md animate-fade-in"
           role="dialog"
           aria-modal="true"
           aria-labelledby="desktop-modal-title"
         >
           {/* Header */}
           <div className="flex items-center justify-between p-4 border-b">
-            <h2 id="desktop-modal-title" className="text-lg font-semibold text-gray-900">
+            <h2 id="desktop-modal-title" className="text-lg font-semibold text-popover-foreground">
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors touch-target"
+              className="p-2 rounded-lg hover:bg-surface-hover transition-colors touch-target"
               aria-label="Close"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

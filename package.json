@@ -8,7 +8,16 @@
     "start": "next start",
     "lint": "next lint",
     "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "monitor": "./scripts/monitor-performance.sh",
+    "monitor:test": "./scripts/monitor-performance.sh --test",
+    "monitor:full": "./scripts/monitor-performance.sh --monitor",
+    "logs:clean": "./scripts/monitor-performance.sh --clean",
+    "dev:debug": "DEBUG_MODE=true next dev",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .next && rm -rf node_modules/.cache && rm -rf logs/*.log",
+    "dev:clean": "pnpm clean && pnpm dev",
+    "debug:clean": "pnpm clean && pnpm dev:debug"
   },
   "dependencies": {
     "@libsql/client": "^0.15.10",
